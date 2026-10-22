@@ -1,0 +1,4 @@
+.env
+aroma.db
+__pycache__/
+venv/

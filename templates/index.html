@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aroma: atir tanlash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3ece6;--ink:#2a1f2d;--plum:#5b2a4e;--mist:#e4d6dd;--line:#cdb9c4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:32px 20px 64px}
+h1{font:500 2.4rem/1.1 Fraunces,Georgia,serif;margin:0 0 8px;color:var(--plum)}
+p.lead{margin:0 0 28px;max-width:44ch}
+label,legend{display:block;font-weight:600;margin:20px 0 6px;padding:0}
+select,input[type=number],input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:inherit}
+fieldset{border:0;margin:0;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{margin:0;font-weight:400}
+.chips input{position:absolute;opacity:0}
+.chips span{display:inline-block;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer}
+.chips input:checked+span{background:var(--plum);color:#fff;border-color:var(--plum)}
+.chips input:focus-visible+span,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #b07aa1;outline-offset:2px}
+button{margin-top:28px;width:100%;padding:14px;border:0;border-radius:8px;background:var(--plum);color:#fff;font:600 1rem inherit;cursor:pointer}
+button:disabled{opacity:.6}
+#natija{margin-top:36px}
+.kart{background:#fff;border-left:5px solid var(--plum);padding:16px 18px;margin-bottom:14px;border-radius:0 8px 8px 0}
+.kart h2{font:500 1.35rem Fraunces,Georgia,serif;margin:0}
+.kart .narx{color:var(--plum);font-weight:600;margin:2px 0 8px}
+.xato{background:#f9dede;padding:12px;border-radius:8px}
+.kichik{font-size:.85rem;color:#6b5a68}
+</style>
+</head>
+<body>
+<main>
+<h1>O'zingizga mos atirni toping</h1>
+<p class="lead">Besh ta savolga javob bering. Do'kon katalogidan uchta atir tanlab beramiz.</p>
+<form id="forma">
+<label for="jins">Atir kim uchun?</label>
+<select id="jins" required><option value="">Tanlang</option><option value="ayol">Ayol uchun</option><option value="erkak">Erkak uchun</option><option value="unisex">Ikkalasi uchun</option></select>
+<label for="fasl">Qaysi faslda ishlatasiz?</label>
+<select id="fasl"><option value="barcha">Har qanday</option><option>bahor</option><option>yoz</option><option>kuz</option><option>qish</option></select>
+<label for="kayfiyat">Qanday kayfiyat?</label>
+<select id="kayfiyat"><option>Yengil va yangi</option><option>Romantik</option><option>Jiddiy va kuchli</option><option>Shirin va iliq</option><option>Sokin</option></select>
+<fieldset><legend>Qaysi hidlar yoqadi?</legend><div class="chips">
+<label><input type="checkbox" name="hid" value="gul"><span>Gul</span></label>
+<label><input type="checkbox" name="hid" value="sitrus"><span>Sitrus</span></label>
+<label><input type="checkbox" name="hid" value="yog'och"><span>Yog'och</span></label>
+<label><input type="checkbox" name="hid" value="shirin"><span>Shirin</span></label>
+<label><input type="checkbox" name="hid" value="mushk"><span>Mushk</span></label>
+</div></fieldset>
+<label for="budjet">Eng ko'pi bilan necha so'm? <span class="kichik">(ixtiyoriy)</span></label>
+<input id="budjet" type="number" min="0" step="10000" inputmode="numeric">
+<label for="izoh">Qo'shimcha istak <span class="kichik">(ixtiyoriy, 200 belgigacha)</span></label>
+<input id="izoh" type="text" maxlength="200">
+<button id="btn" type="submit">Tavsiya olish</button>
+</form>
+<div id="natija" aria-live="polite"></div>
+</main>
+<script>
+const f=document.getElementById("forma"),out=document.getElementById("natija"),btn=document.getElementById("btn");
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+f.addEventListener("submit",async e=>{
+  e.preventDefault();btn.disabled=true;btn.textContent="Tanlanmoqda...";out.innerHTML="";
+  const body={jins:jins.value,fasl:fasl.value,kayfiyat:kayfiyat.value,
+    hidlar:[...document.querySelectorAll("[name=hid]:checked")].map(x=>x.value),budjet:budjet.value,izoh:izoh.value};
+  try{
+    const r=await fetch("/api/recommend",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(!r.ok){out.innerHTML=`<div class="xato">${esc(d.xato||"Xatolik yuz berdi.")}</div>`;}
+    else{
+      out.innerHTML=d.tavsiyalar.map(t=>`<div class="kart"><h2>${esc(t.nomi)}</h2><div class="narx">${Number(t.narx).toLocaleString("ru-RU")} so'm</div><div>${esc(t.sabab)}</div></div>`).join("")
+        +(d.ai?"":'<p class="kichik">AI hozir band, shuning uchun eng mos atirlar katalog bo\'yicha tanlandi.</p>');
+    }
+  }catch{out.innerHTML='<div class="xato">Internet bilan aloqa yo\'q. Qayta urinib ko\'ring.</div>';}
+  btn.disabled=false;btn.textContent="Tavsiya olish";
+});
+</script>
+</body>
+</html>

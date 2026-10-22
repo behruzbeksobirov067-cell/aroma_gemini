@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aroma: do'kon paneli</title>
+<style>
+body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#f3ece6;color:#2a1f2d}
+main{max-width:820px;margin:0 auto;padding:28px 20px}
+h1,h2{color:#5b2a4e}
+input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #cdb9c4}
+button{background:#5b2a4e;color:#fff;border:0;cursor:pointer}
+.msg{background:#fff;border-left:5px solid #5b2a4e;padding:10px 14px;margin:12px 0}
+table{width:100%;border-collapse:collapse;background:#fff}
+td,th{padding:8px;border-bottom:1px solid #e4d6dd;text-align:left;font-size:.9rem}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body><main>
+<h1>Do'kon paneli</h1>
+{% if xabar %}<div class="msg">{{ xabar }}</div>{% endif %}
+{% if not kirgan %}
+<form method="post"><label>Parol<br><input type="password" name="parol" required></label> <button>Kirish</button></form>
+{% else %}
+<p><a href="/">Mijoz sahifasi</a> · <a href="/admin/chiqish">Chiqish</a></p>
+<h2>Katalogni yuklash</h2>
+<p>CSV ustunlari: nomi, brend, narx, guruh, fasl, jins, tavsif. Yangi fayl eskisini almashtiradi.</p>
+<form method="post" action="/admin/upload" enctype="multipart/form-data">
+<input type="file" name="fayl" accept=".csv" required> <button>Yuklash</button></form>
+<h2>Statistika</h2>
+<p>Jami so'rovlar: <b>{{ soni }}</b></p>
+{% if top %}<p>Eng ko'p tavsiya qilinganlar: {% for n,c in top %}{{ n }} ({{ c }}){% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+<h2>Katalog ({{ atirlar|length }} ta)</h2>
+{% if atirlar %}<div class="wrap"><table><tr><th>Nomi</th><th>Narx</th><th>Guruh</th><th>Fasl</th><th>Jins</th></tr>
+{% for a in atirlar %}<tr><td>{{ a.nomi }}</td><td>{{ a.narx }}</td><td>{{ a.guruh }}</td><td>{{ a.fasl }}</td><td>{{ a.jins }}</td></tr>{% endfor %}</table></div>
+{% else %}<p>Katalog bo'sh. Yuqorida CSV faylni yuklang (namuna: katalog_namuna.csv).</p>{% endif %}
+{% endif %}
+</main></body></html>
